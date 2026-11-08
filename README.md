@@ -142,7 +142,8 @@ The script uses Podman if it is installed, otherwise Docker. `--engine docker` o
 - **Signing in:** if the registry requires it, the script signs in with `REGISTRY_USERNAME` and `REGISTRY_PASSWORD` if they are set, and otherwise asks in the terminal.
 - **Registries over HTTP or with a self-signed certificate:**
   - **Podman:** pass `--insecure` to the script.
-  - **Docker:** add the registry to `insecure-registries` in `/etc/docker/daemon.json`.
+  - **Docker:** add the registry to `insecure-registries` in `/etc/docker/daemon.json`, and also pass `--insecure` when using `--latest-only`.
+- **Keeping only the latest image:** with `--latest-only`, the script pushes only `latest`, then deletes the previous `latest` from the registry and the previous local image, so old versions don't accumulate. See [Registry space](#registry-space).
 - **Architecture:** the image is built for the architecture of the machine that builds it. For example, an image built on x86 doesn't run on an ARM board.
 
 **2. Run it on the server.** Only three things are needed there:
@@ -168,7 +169,26 @@ docker compose up -d
 docker compose logs         # shows the setup code
 ```
 
-**Upgrading** is the same `pull` and `up -d`. To go back to an earlier version, set `KMT_TAG` to that version and run them again.
+**Upgrading** is the same `pull` and `up -d`. To go back to an earlier version, set `KMT_TAG` to that version and run them again. Each upgrade leaves the previous image on the server; remove it with `docker image prune -f`.
+
+#### Registry space
+
+By default, every release adds a versioned image to the registry, so you can go back to any version. If the registry has little space, release with `--latest-only` instead:
+
+```bash
+npm run release -- registry.example.lan/kmtracker --latest-only
+```
+
+For the previous image to be removed from the registry, the registry has to allow it. With the standard `registry:2`:
+
+1. Start the registry with `REGISTRY_STORAGE_DELETE_ENABLED=true`.
+2. Free the disk space regularly with its garbage collection, for example from cron on the registry host:
+
+   ```bash
+   docker exec <registry-container> registry garbage-collect --delete-untagged /etc/docker/registry/config.yml
+   ```
+
+With `--latest-only`, there is no older image to go back to. To return to a previous version, check out its Git tag and release it again.
 
 ### systemd, without containers
 
@@ -289,7 +309,7 @@ npm run dev        # backend and both frontends with hot reload
 | `npm test` | Runs the tests (Vitest). |
 | `npm run typecheck` | Type-checks the whole project. |
 | `npm run reset-password -- <username>` | Generates a new one-time password for an account. |
-| `npm run release -- <image>` | Builds the container image and pushes it to a registry. |
+| `npm run release -- <image>` | Builds the container image and pushes it to a registry. Options: `--engine podman\|docker`, `--insecure`, `--latest-only`. |
 
 **Stack:** TypeScript everywhere, React with Vite and Tailwind CSS, a Fastify server, and SQLite through Node's built-in `node:sqlite` module.
 
@@ -300,9 +320,6 @@ npm run dev        # backend and both frontends with hot reload
 | `web/client/` | The client application. |
 | `web/admin/` | The administrator panel. |
 | `web/common/` | Shared UI components, styles, and translations. |
-| `plans/` | Functional specification, architecture, and implementation plan. |
-
-The full specification is in [`plans/functionality.md`](plans/functionality.md), and the technical design is in [`plans/architecture.md`](plans/architecture.md).
 
 ## Limitations
 
