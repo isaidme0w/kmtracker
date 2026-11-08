@@ -1,0 +1,35 @@
+# Planning notes
+plans/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Application data (database, backups)
+data/*
+!data/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tests
+coverage/
+
+# Vite
+.vite/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
