@@ -1,0 +1,25 @@
+# Example systemd unit for running KM Tracker directly on a host with Node 26.
+# Adjust User, WorkingDirectory, and the path to node (see `which node`).
+[Unit]
+Description=KM Tracker
+After=network.target
+
+[Service]
+Type=simple
+User=kmtracker
+Group=kmtracker
+WorkingDirectory=/opt/kmtracker
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --env-file-if-exists=.env server/index.ts
+Restart=on-failure
+RestartSec=5
+
+# Hardening: the application only writes to its data directory.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/kmtracker/data
+
+[Install]
+WantedBy=multi-user.target

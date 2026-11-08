@@ -1,0 +1,15 @@
+services:
+  kmtracker:
+    image: ${KMT_IMAGE:-kmtracker}:${KMT_TAG:-latest}
+    build: .
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      HOST: 0.0.0.0
+      DATA_DIR: /app/data
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    volumes:
+      - ./data:/app/data
