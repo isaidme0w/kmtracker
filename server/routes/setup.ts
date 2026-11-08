@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { StatusDto } from '../../shared/api.ts';
 import { isLanguage, DEFAULT_ACCENT } from '../../shared/preferences.ts';
-import { isValidTimeZone, validateFirstName, validateLastName, validatePassword } from '../../shared/validation.ts';
+import { isValidTimeZone, validateFirstName, validateLastName, validatePassword, validateUsername } from '../../shared/validation.ts';
 import { nowIso, transaction } from '../db/database.ts';
 import { hashPassword } from '../auth/passwords.ts';
 import { createSession } from '../auth/sessions.ts';
@@ -12,8 +12,6 @@ import { createPerson } from '../services/persons.ts';
 import { setSetting } from '../services/settings.ts';
 import { version } from '../version.ts';
 import { actorFor, bodyOf, buildMe, setSessionCookie, str, type AppContext } from './context.ts';
-
-export const PROTECTED_USERNAME = 'admin';
 
 export function registerSetupRoutes(app: FastifyInstance, ctx: AppContext): void {
   const { db, setup } = ctx;
@@ -28,6 +26,7 @@ export function registerSetupRoutes(app: FastifyInstance, ctx: AppContext): void
       setup.limiter.recordFailure();
       throw new AppError('SETUP_CODE_INVALID');
     }
+    const username = validateUsername(str(body, 'username'));
     const firstName = validateFirstName(str(body, 'firstName'));
     const lastName = validateLastName(str(body, 'lastName'), true);
     const password = validatePassword(str(body, 'password'));
@@ -44,7 +43,7 @@ export function registerSetupRoutes(app: FastifyInstance, ctx: AppContext): void
           `INSERT INTO accounts (person_id, username, password_hash, role, is_protected, accent, language, created_at)
            VALUES (?, ?, ?, 'admin', 1, ?, ?, ?)`,
         )
-        .run(person.id, PROTECTED_USERNAME, hash, DEFAULT_ACCENT, language, nowIso());
+        .run(person.id, username, hash, DEFAULT_ACCENT, language, nowIso());
       setSetting(db, 'time_zone', timeZone);
       const id = Number(result.lastInsertRowid);
       logEvent(db, { type: 'setup.completed', actor: actorFor(db, findAccount(db, id)!), data: { timeZone } });

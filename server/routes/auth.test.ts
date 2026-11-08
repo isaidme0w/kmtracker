@@ -49,6 +49,21 @@ describe('first start', () => {
     expect((await browser.get('/api/status')).json()).toMatchObject({ setupRequired: false });
     expect(errorCode(await browser.post('/api/setup', {}))).toBe('SETUP_ALREADY_DONE');
   });
+
+  it('creates the protected account with the chosen username', async () => {
+    const { app } = await createTestApp();
+    const browser = new Browser(app);
+    const payload = { code: TEST_SETUP_CODE, firstName: 'Jan', lastName: 'Zieliński', password: ADMIN_PASSWORD, timeZone: 'Europe/Warsaw' };
+    expect(errorCode(await browser.post('/api/setup', { ...payload, username: 'ja' }))).toBe('USERNAME_INVALID');
+    expect((await browser.get('/api/status')).json()).toMatchObject({ setupRequired: true });
+
+    expect((await browser.post('/api/setup', { ...payload, username: ' Piotr ' })).statusCode).toBe(200);
+    const me = (await browser.get('/api/admin/me')).json();
+    expect(me.account).toMatchObject({ username: 'piotr', role: 'admin', isProtected: true });
+    const signIn = new Browser(app);
+    expect((await signIn.post('/api/auth/login', { username: 'admin', password: ADMIN_PASSWORD })).statusCode).toBe(401);
+    expect((await signIn.post('/api/auth/login', { username: 'piotr', password: ADMIN_PASSWORD })).statusCode).toBe(200);
+  });
 });
 
 describe('sign-in', () => {

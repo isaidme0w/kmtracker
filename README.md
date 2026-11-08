@@ -86,7 +86,7 @@ Used by every driver, designed mostly for phones.
 - **Sessions:** client sessions last 7 days and panel sessions 12 hours.
 - **Ending sessions:** changing or resetting a password ends the account's other sessions.
 - **Login limits:** after 10 failed attempts on a username within 15 minutes, further sign-ins are refused, and errors don't reveal whether a username exists.
-- **Protected `admin` account:** it can't be deleted, deactivated, or demoted from the panel.
+- **Protected administrator account:** the account created in the setup wizard can't be deleted, deactivated, or demoted from the panel.
 - **Network:** the application doesn't restrict clients by IP address and has no TLS of its own. **Run it on a private network or behind a VPN**, or put a reverse proxy with HTTPS in front of it.
 
 ## Requirements
@@ -232,7 +232,7 @@ sudo systemctl restart kmtracker
    ```
 
    Every page redirects to `/admin/setup` until setup is complete. A new code is generated at every restart, and only the latest one works.
-2. **Run the setup wizard.** Open `http://<server>:3000/admin/setup` and enter the code, your first and last name, a password, and the time zone. This creates the protected `admin` account and signs you in to the panel.
+2. **Run the setup wizard.** Open `http://<server>:3000/admin/setup` and enter the code, a username of your choice, your first and last name, a password, and the time zone. This creates the protected administrator account and signs you in to the panel.
 3. **Create accounts.** In the panel, under **Users**, create an account for each driver. Each account gets a one-time password, which you pass on to its owner. It is shown only once; if it's lost, reset the password.
 4. **Drivers sign in.** Each driver signs in at `http://<server>:3000/`, sets their own password, and can choose a language and accent colour in the settings.
 5. **Set up the car.** With the tank full, any signed-in user enters the car's current odometer on the dashboard. This starts the first cycle, and from then on drivers record readings and refuels.
@@ -276,14 +276,14 @@ Before applying database migrations during an upgrade, the server automatically 
 
 ### Lost administrator password
 
-If nobody can sign in to the panel, generate a new one-time password for any account, including `admin`, on the server:
+If nobody can sign in to the panel, generate a new one-time password for any account, including the protected administrator account, on the server:
 
 ```bash
 # Docker / Podman
-docker compose exec kmtracker node server/cli/reset-password.ts admin
+docker compose exec kmtracker node server/cli/reset-password.ts <username>
 
 # systemd (run as the service user, from the application directory)
-cd /opt/kmtracker && sudo -u kmtracker npm run reset-password -- admin
+cd /opt/kmtracker && sudo -u kmtracker npm run reset-password -- <username>
 ```
 
 The new password is printed to the terminal and must be changed at the next sign-in.

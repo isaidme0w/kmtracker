@@ -15,6 +15,7 @@ export function SetupWizard({ onDone }: { onDone: () => void }) {
   const detected = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Warsaw';
   const zones = useMemo(() => timeZones(detected), [detected]);
   const [code, setCode] = useState('');
+  const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +35,7 @@ export function SetupWizard({ onDone }: { onDone: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      const me = await request<MeDto>('POST', '/api/setup', { code, firstName, lastName, password, timeZone, language });
+      const me = await request<MeDto>('POST', '/api/setup', { code, username, firstName, lastName, password, timeZone, language });
       setMe(me);
       onDone();
     } catch (caught) {
@@ -61,6 +62,16 @@ export function SetupWizard({ onDone }: { onDone: () => void }) {
           autoCapitalize="characters"
           large
           className="font-mono tracking-widest"
+          required
+        />
+        <TextInput
+          label={t.setup.username}
+          hint={t.setup.usernameHint}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
           required
         />
         <div className="grid gap-3 sm:grid-cols-2">

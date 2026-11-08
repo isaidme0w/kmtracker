@@ -100,6 +100,7 @@ export async function completeSetup(app: FastifyInstance): Promise<Browser> {
   const browser = new Browser(app);
   const response = await browser.post('/api/setup', {
     code: TEST_SETUP_CODE,
+    username: 'admin',
     firstName: 'Jan',
     lastName: 'Zieliński',
     password: ADMIN_PASSWORD,

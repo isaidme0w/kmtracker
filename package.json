@@ -1,6 +1,6 @@
 {
   "name": "kmtracker",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Splits the fuel costs of a shared car between its drivers by distance driven",
   "private": true,
   "type": "module",
