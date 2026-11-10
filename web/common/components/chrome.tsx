@@ -42,7 +42,7 @@ export function LanguageDropdown() {
         className="h-[38px] cursor-pointer border-none bg-transparent text-sm font-semibold text-fg outline-none"
       >
         {availableLanguages.map((option) => (
-          <option key={option.code} value={option.code}>
+          <option key={option.code} value={option.code} className="bg-surface text-fg">
             {option.name}
           </option>
         ))}
