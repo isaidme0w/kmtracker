@@ -64,12 +64,12 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pt-4 pb-24 sm:pb-10">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pb-10">
         <Outlet />
       </main>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 flex h-16 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 flex h-[calc(4rem+env(safe-area-inset-bottom))] border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] sm:hidden"
         aria-label={t.nav.dashboard}
       >
         {tabs.map((tab) => (
