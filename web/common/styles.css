@@ -111,3 +111,9 @@ body {
 input, select, textarea, button {
   font: inherit;
 }
+
+/* Inter's contextual alternates shift the mask dots up or down next to the
+   letter a phone briefly shows while typing. */
+input[type="password"] {
+  font-feature-settings: "calt" 0;
+}
