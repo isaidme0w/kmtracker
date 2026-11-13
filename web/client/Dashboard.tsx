@@ -303,6 +303,7 @@ function RefuelDialog({
     try {
       const result = await api.post<RefuelResultDto>('/refuels', body());
       if (!result.settled) notify(isFull ? t.refuel.savedNoDistance : t.refuel.saved);
+      setPreview(null);
       onDone(result);
     } catch (caught) {
       setError(caught);
@@ -387,7 +388,7 @@ function RefuelDialog({
       />
 
       <Dialog
-        open={preview !== null}
+        open={open && preview !== null}
         title={fill(t.refuel.confirmTitle, { number: cycle.cycle.number })}
         onClose={() => setPreview(null)}
         sheet
