@@ -14,8 +14,8 @@ function Dot({ label }: { label: string }) {
   );
 }
 
-export function Layout() {
-  const { me, t, signOut } = useApp();
+export function Layout({ version }: { version: string }) {
+  const { me, t, fill, signOut } = useApp();
   const navigate = useNavigate();
   const unseen = me?.unseenCorrections ?? { active: false, history: false };
 
@@ -66,6 +66,7 @@ export function Layout() {
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pb-10">
         <Outlet />
+        {version && <footer className="mt-auto pt-2 text-center text-xs text-muted">{fill(t.common.version, { version })}</footer>}
       </main>
 
       <nav

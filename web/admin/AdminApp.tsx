@@ -42,7 +42,7 @@ export function AdminApp() {
   if (status.setupRequired) return <SetupWizard onDone={() => setStatus({ ...status, setupRequired: false })} />;
   if (!me) {
     return (
-      <AuthLayout>
+      <AuthLayout version={status.version}>
         <LoginForm title={t.auth.panelSignInTitle} />
       </AuthLayout>
     );

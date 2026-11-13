@@ -18,6 +18,7 @@ export const en = {
   languageName: 'English',
 
   common: {
+    version: 'KM Tracker {version}',
     save: 'Save',
     cancel: 'Cancel',
     close: 'Close',
@@ -331,7 +332,6 @@ export const en = {
   admin: {
     panel: 'Administrator panel',
     menu: 'Menu',
-    version: 'KM Tracker {version}',
     app: 'Application',
     signOutPanel: 'Sign out of the panel',
     sections: {

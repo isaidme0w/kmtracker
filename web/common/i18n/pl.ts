@@ -4,6 +4,7 @@ export const pl: Translations = {
   languageName: 'Polski',
 
   common: {
+    version: 'KM Tracker {version}',
     save: 'Zapisz',
     cancel: 'Anuluj',
     close: 'Zamknij',
@@ -327,7 +328,6 @@ export const pl: Translations = {
   admin: {
     panel: 'Panel administratora',
     menu: 'Menu',
-    version: 'KM Tracker {version}',
     app: 'Aplikacja',
     signOutPanel: 'Wyloguj z panelu',
     sections: {

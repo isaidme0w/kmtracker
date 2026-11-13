@@ -7,8 +7,8 @@ import { Button, ErrorBox, InfoBox, TextInput } from './components/ui.tsx';
 
 // Layout of the pages shown before signing in: language and theme on top,
 // the form in the middle.
-export function AuthLayout({ children, wide }: { children: ReactNode; wide?: boolean }) {
-  const { t } = useApp();
+export function AuthLayout({ children, wide, version }: { children: ReactNode; wide?: boolean; version?: string }) {
+  const { t, fill } = useApp();
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-end gap-1.5 p-2 sm:p-3">
@@ -27,6 +27,7 @@ export function AuthLayout({ children, wide }: { children: ReactNode; wide?: boo
           {children}
         </div>
       </main>
+      {version && <footer className="pb-4 text-center text-xs text-muted">{fill(t.common.version, { version })}</footer>}
     </div>
   );
 }

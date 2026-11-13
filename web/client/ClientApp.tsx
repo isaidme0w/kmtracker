@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import type { StatusDto } from '../../shared/api.ts';
 import { SETUP_PATH, request } from '../common/api.ts';
@@ -12,10 +12,12 @@ import { SettingsPage } from '../common/SettingsPage.tsx';
 
 export function ClientApp() {
   const { me, loading, t } = useApp();
+  const [version, setVersion] = useState('');
 
   useEffect(() => {
     request<StatusDto>('GET', '/api/status')
       .then((status) => {
+        setVersion(status.version);
         if (status.setupRequired) window.location.assign(SETUP_PATH);
       })
       .catch(() => undefined);
@@ -28,7 +30,7 @@ export function ClientApp() {
   if (loading) return <LoadingBlock />;
   if (!me) {
     return (
-      <AuthLayout>
+      <AuthLayout version={version}>
         <LoginForm title={t.auth.signInTitle} />
       </AuthLayout>
     );
@@ -37,7 +39,7 @@ export function ClientApp() {
 
   return (
     <Routes>
-      <Route element={<Layout />}>
+      <Route element={<Layout version={version} />}>
         <Route index element={<Dashboard />} />
         <Route path="history" element={<History />} />
         <Route path="history/:cycleId" element={<History />} />

@@ -69,7 +69,7 @@ export function AdminLayout({ version }: { version: string }) {
           <Logo subtitle={t.admin.panel} />
         </div>
         {nav}
-        <div className="mt-auto border-t border-line px-2 pt-3 text-xs text-muted">{fill(t.admin.version, { version })}</div>
+        <div className="mt-auto border-t border-line px-2 pt-3 text-xs text-muted">{fill(t.common.version, { version })}</div>
       </aside>
 
       {menuOpen && (
@@ -80,7 +80,7 @@ export function AdminLayout({ version }: { version: string }) {
               <Logo subtitle={t.admin.panel} />
             </div>
             {nav}
-            <div className="mt-auto border-t border-line px-2 pt-3 text-xs text-muted">{fill(t.admin.version, { version })}</div>
+            <div className="mt-auto border-t border-line px-2 pt-3 text-xs text-muted">{fill(t.common.version, { version })}</div>
           </aside>
         </div>
       )}
