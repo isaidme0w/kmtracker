@@ -89,6 +89,72 @@
   --shadow-pop: var(--shadow);
 }
 
+/* Animations. Entering ones run when an element appears; the *-out ones are
+   played by usePresence before an element is removed. */
+@theme {
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fade-in 0.2s ease-out backwards;
+  --animate-fade-out: fade-out 0.18s ease-in forwards;
+  --animate-rise-in: rise-in 0.25s var(--ease-soft) backwards;
+  --animate-pop-in: pop-in 0.18s var(--ease-soft) backwards;
+  --animate-pop-out: pop-out 0.15s ease-in forwards;
+  --animate-sheet-in: sheet-in 0.3s var(--ease-soft) backwards;
+  --animate-sheet-out: sheet-out 0.18s ease-in forwards;
+  --animate-slide-left-in: slide-left-in 0.28s var(--ease-soft) backwards;
+  --animate-slide-left-out: slide-left-out 0.18s ease-in forwards;
+  --animate-slide-right-in: slide-right-in 0.28s var(--ease-soft) backwards;
+  --animate-slide-right-out: slide-right-out 0.18s ease-in forwards;
+  --animate-row-in: row-in 1.4s ease-out backwards;
+  --animate-row-flush-in: row-flush-in 1.4s ease-out backwards;
+  --animate-bar-in: bar-in 0.5s var(--ease-soft) backwards;
+  --animate-shake: shake 0.3s ease-in-out;
+  --animate-toast: toast 3.5s ease-out both;
+
+  @keyframes fade-in { from { opacity: 0; } }
+  @keyframes fade-out { to { opacity: 0; } }
+  @keyframes rise-in { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes pop-in { from { opacity: 0; transform: scale(0.95); } }
+  @keyframes pop-out { to { opacity: 0; transform: scale(0.95); } }
+  @keyframes sheet-in { from { transform: translateY(100%); } }
+  @keyframes sheet-out { to { transform: translateY(100%); } }
+  @keyframes slide-left-in { from { transform: translateX(-100%); } }
+  @keyframes slide-left-out { to { transform: translateX(-100%); } }
+  @keyframes slide-right-in { from { transform: translateX(100%); } }
+  @keyframes slide-right-out { to { transform: translateX(100%); } }
+  @keyframes row-in {
+    0% { opacity: 0; transform: translateY(-8px); background-color: var(--accent-soft); }
+    20% { opacity: 1; transform: none; background-color: var(--accent-soft); }
+    100% { background-color: transparent; }
+  }
+  /* For rows without padding: the highlight reaches a little past the text. */
+  @keyframes row-flush-in {
+    0% { opacity: 0; transform: translateY(-8px); background-color: var(--accent-soft); box-shadow: -8px 0 0 var(--accent-soft), 8px 0 0 var(--accent-soft); }
+    20% { opacity: 1; transform: none; background-color: var(--accent-soft); box-shadow: -8px 0 0 var(--accent-soft), 8px 0 0 var(--accent-soft); }
+    100% { background-color: transparent; box-shadow: -8px 0 0 transparent, 8px 0 0 transparent; }
+  }
+  @keyframes bar-in { from { width: 0; } }
+  @keyframes shake {
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+  }
+  @keyframes toast {
+    0% { opacity: 0; transform: translateY(12px); }
+    6%, 92% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateY(6px); }
+  }
+}
+
+/* People who ask their system for less motion get none, except the spinner. */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin), *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 html, body, #root {
   min-height: 100%;
 }

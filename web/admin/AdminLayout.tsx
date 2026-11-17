@@ -14,13 +14,14 @@ import {
   UserIcon,
   UsersIcon,
 } from '../common/components/icons.tsx';
-import { IconButton, cx } from '../common/components/ui.tsx';
+import { IconButton, cx, usePresence } from '../common/components/ui.tsx';
 
 export function AdminLayout({ version }: { version: string }) {
   const { t, fill, signOut } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menu = usePresence(menuOpen);
 
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
@@ -72,10 +73,19 @@ export function AdminLayout({ version }: { version: string }) {
         <div className="mt-auto border-t border-line px-2 pt-3 text-xs text-muted">{fill(t.common.version, { version })}</div>
       </aside>
 
-      {menuOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col gap-2 bg-surface px-3 py-4 shadow-pop">
+      {menu.mounted && (
+        <div className={cx('fixed inset-0 z-40 lg:hidden', menu.closing && 'pointer-events-none')}>
+          <div
+            className={cx('absolute inset-0 bg-overlay', menu.closing ? 'animate-fade-out' : 'animate-fade-in')}
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <aside
+            className={cx(
+              'absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col gap-2 bg-surface px-3 py-4 shadow-pop',
+              menu.closing ? 'animate-slide-left-out' : 'animate-slide-left-in',
+            )}
+          >
             <div className="px-2 pb-3">
               <Logo subtitle={t.admin.panel} />
             </div>
@@ -98,8 +108,11 @@ export function AdminLayout({ version }: { version: string }) {
             <UserMenu items={items} showName />
           </div>
         </header>
-        <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 pt-6 pb-12 sm:px-6 lg:px-8">
-          <Outlet />
+        <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-12 sm:px-6 lg:px-8">
+          {/* Remounted per section, so each page's blocks animate in. */}
+          <div key={location.pathname.split('/')[1]} className="flex flex-col gap-5 *:animate-rise-in">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { personName } from '../../../shared/format.ts';
 import { useApp } from '../app.tsx';
 import { availableLanguages } from '../i18n/index.ts';
 import { ChevronDownIcon, GaugeIcon, GlobeIcon, MoonIcon, SunIcon } from './icons.tsx';
-import { Avatar, IconButton, cx } from './ui.tsx';
+import { Avatar, IconButton, cx, usePresence } from './ui.tsx';
 
 export function Logo({ subtitle }: { subtitle?: string }) {
   return (
@@ -61,6 +61,7 @@ export function UserMenu({ items, showName }: { items: MenuItem[]; showName?: bo
   const { me, t } = useApp();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { mounted, closing } = usePresence(open);
 
   useEffect(() => {
     if (!open) return;
@@ -97,8 +98,14 @@ export function UserMenu({ items, showName }: { items: MenuItem[]; showName?: bo
           </span>
         )}
       </button>
-      {open && (
-        <div role="menu" className="absolute top-12 right-0 z-30 flex w-60 flex-col rounded-2xl border border-line bg-surface p-1.5 shadow-pop">
+      {mounted && (
+        <div
+          role="menu"
+          className={cx(
+            'absolute top-12 right-0 z-30 flex w-60 origin-top-right flex-col rounded-2xl border border-line bg-surface p-1.5 shadow-pop',
+            closing ? 'pointer-events-none animate-pop-out' : 'animate-pop-in',
+          )}
+        >
           <div className="px-3 pt-2 pb-2">
             <div className="font-bold">{personName(me.person)}</div>
             <div className="text-[13px] text-muted">

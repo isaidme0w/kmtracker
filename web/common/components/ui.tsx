@@ -2,6 +2,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -10,11 +11,38 @@ import {
 import { createPortal } from 'react-dom';
 import { initials } from '../../../shared/format.ts';
 import type { PersonRef } from '../../../shared/api.ts';
-import { useApp } from '../app.tsx';
+import { TOAST_DURATION, useApp } from '../app.tsx';
 import { XIcon } from './icons.tsx';
 
 export function cx(...classes: (string | false | null | undefined)[]): string {
   return classes.filter(Boolean).join(' ');
+}
+
+// Keeps an element mounted for a moment after it is closed, so that its
+// closing animation can play. Must not be shorter than the *-out animations.
+export function usePresence(open: boolean, duration = 180): { mounted: boolean; closing: boolean } {
+  const [mounted, setMounted] = useState(open);
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      return;
+    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setMounted(false);
+      return;
+    }
+    const timer = setTimeout(() => setMounted(false), duration);
+    return () => clearTimeout(timer);
+  }, [open, duration]);
+  return { mounted: open || mounted, closing: !open && mounted };
+}
+
+// The value from the last time the element was open. Callers often clear a
+// dialog's content as they close it; this keeps it in place while it leaves.
+function useFrozen<T>(value: T, open: boolean): T {
+  const ref = useRef(value);
+  if (open) ref.current = value;
+  return ref.current;
 }
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -46,7 +74,7 @@ export function Button({
       type="button"
       disabled={disabled || busy}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold whitespace-nowrap transition disabled:cursor-not-allowed disabled:opacity-55',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold whitespace-nowrap transition enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-55',
         size === 'sm' && 'h-9 px-3 text-sm',
         size === 'md' && 'h-11 px-4 text-[15px]',
         size === 'lg' && 'h-12 px-5 text-base',
@@ -69,7 +97,7 @@ export function IconButton({ label, className, children, ...props }: ButtonHTMLA
       aria-label={label}
       title={label}
       className={cx(
-        'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-surface-2 hover:text-fg disabled:opacity-40',
+        'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-surface-2 hover:text-fg enabled:active:scale-90 disabled:opacity-40',
         className,
       )}
       {...props}
@@ -266,7 +294,7 @@ export function Avatar({ person, muted, size = 34 }: { person: Pick<PersonRef, '
 
 export function ErrorBox({ children }: { children: ReactNode }) {
   return (
-    <div role="alert" className="rounded-xl border border-neg/40 bg-neg-bg px-3.5 py-3 text-sm font-semibold text-neg-text">
+    <div role="alert" className="animate-shake rounded-xl border border-neg/40 bg-neg-bg px-3.5 py-3 text-sm font-semibold text-neg-text">
       {children}
     </div>
   );
@@ -308,9 +336,10 @@ export function Toasts() {
         <div
           key={toast.id}
           className={cx(
-            'rounded-xl px-4 py-2.5 text-sm font-semibold shadow-pop',
+            'animate-toast rounded-xl px-4 py-2.5 text-sm font-semibold shadow-pop',
             toast.kind === 'success' ? 'bg-fg text-bg' : 'bg-neg text-white',
           )}
+          style={{ animationDuration: `${TOAST_DURATION}ms` }}
         >
           {toast.message}
         </div>
@@ -360,20 +389,28 @@ export function Dialog({
   const { t } = useApp();
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const { mounted, closing } = usePresence(open);
+  const shown = useFrozen({ title, children, footer }, open);
 
   useEscapeToClose(open, onClose);
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
     const focusable = panelRef.current?.querySelector<HTMLElement>('input, select, textarea, button:not([data-close])');
-    focusable?.focus();
+    focusable?.focus({ preventScroll: true });
     return () => previous?.focus?.();
   }, [open]);
 
-  if (!open) return null;
+  if (!mounted) return null;
   return createPortal(
-    <div className={cx('fixed inset-0 z-40 flex justify-center', sheet ? 'items-end sm:items-center' : 'items-center p-4')}>
-      <div className="absolute inset-0 bg-overlay" onClick={onClose} aria-hidden="true" />
+    <div
+      className={cx(
+        'fixed inset-0 z-40 flex justify-center',
+        sheet ? 'items-end sm:items-center' : 'items-center p-4',
+        closing && 'pointer-events-none',
+      )}
+    >
+      <div className={cx('absolute inset-0 bg-overlay', closing ? 'animate-fade-out' : 'animate-fade-in')} onClick={onClose} aria-hidden="true" />
       <div
         ref={panelRef}
         role="dialog"
@@ -383,18 +420,20 @@ export function Dialog({
           'relative flex max-h-[92vh] w-full flex-col gap-3 overflow-y-auto bg-surface p-5 shadow-pop',
           sheet ? 'rounded-t-3xl sm:rounded-2xl' : 'rounded-2xl',
           wide ? 'sm:max-w-2xl' : 'sm:max-w-md',
+          closing ? 'animate-pop-out' : 'animate-pop-in',
+          sheet && (closing ? 'max-sm:animate-sheet-out' : 'max-sm:animate-sheet-in'),
         )}
       >
         <div className="flex items-center justify-between gap-3">
           <h2 id={titleId} className="m-0 text-[19px] font-bold">
-            {title}
+            {shown.title}
           </h2>
           <IconButton label={t.common.close} onClick={onClose} data-close="">
             <XIcon />
           </IconButton>
         </div>
-        {children}
-        {footer && <div className="mt-1 flex flex-wrap justify-end gap-2">{footer}</div>}
+        {shown.children}
+        {shown.footer && <div className="mt-1 flex flex-wrap justify-end gap-2">{shown.footer}</div>}
       </div>
     </div>,
     document.body,
@@ -417,27 +456,32 @@ export function Drawer({
 }) {
   const { t } = useApp();
   const titleId = useId();
+  const { mounted, closing } = usePresence(open);
+  const shown = useFrozen({ title, children, footer }, open);
   useEscapeToClose(open, onClose);
-  if (!open) return null;
+  if (!mounted) return null;
   return createPortal(
-    <div className="fixed inset-0 z-40">
-      <div className="absolute inset-0 bg-overlay" onClick={onClose} aria-hidden="true" />
+    <div className={cx('fixed inset-0 z-40', closing && 'pointer-events-none')}>
+      <div className={cx('absolute inset-0 bg-overlay', closing ? 'animate-fade-out' : 'animate-fade-in')} onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="absolute inset-y-0 right-0 flex w-full max-w-[440px] flex-col gap-3 overflow-y-auto border-l border-line bg-surface p-5 shadow-pop sm:p-6"
+        className={cx(
+          'absolute inset-y-0 right-0 flex w-full max-w-[440px] flex-col gap-3 overflow-y-auto border-l border-line bg-surface p-5 shadow-pop sm:p-6',
+          closing ? 'animate-slide-right-out' : 'animate-slide-right-in',
+        )}
       >
         <div className="flex items-center justify-between gap-3">
           <h2 id={titleId} className="m-0 text-xl font-bold">
-            {title}
+            {shown.title}
           </h2>
           <IconButton label={t.common.close} onClick={onClose}>
             <XIcon />
           </IconButton>
         </div>
-        {children}
-        {footer && <div className="mt-auto flex justify-end gap-2 pt-3">{footer}</div>}
+        {shown.children}
+        {shown.footer && <div className="mt-auto flex justify-end gap-2 pt-3">{shown.footer}</div>}
       </div>
     </div>,
     document.body,

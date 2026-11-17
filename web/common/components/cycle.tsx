@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { PersonRef, PersonShareDto, ReadingDto, RefuelDto, TransferDto } from '../../../shared/api.ts';
 import { personName } from '../../../shared/format.ts';
 import { useApp } from '../app.tsx';
@@ -29,12 +29,34 @@ export function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function RefuelsList({ refuels }: { refuels: RefuelDto[] }) {
+// Ids that were added after the list was first shown, so that only new rows
+// animate in and the rows already there on load stay still.
+function useAddedIds(ids: number[]): Set<number> {
+  const known = useRef<Set<number> | null>(null);
+  const added = useRef(new Set<number>());
+  if (known.current === null) known.current = new Set(ids);
+  for (const id of ids) {
+    if (known.current.has(id)) continue;
+    known.current.add(id);
+    added.current.add(id);
+  }
+  return added.current;
+}
+
+export function RefuelsList({ refuels, emptyText }: { refuels: RefuelDto[]; emptyText?: string }) {
   const { t, f } = useApp();
+  const added = useAddedIds(refuels.map((refuel) => refuel.id));
+  if (refuels.length === 0 && emptyText) return <p className="m-0 text-sm text-muted">{emptyText}</p>;
   return (
     <div className="flex flex-col gap-2">
       {refuels.map((refuel) => (
-        <div key={refuel.id} className="flex flex-wrap justify-between gap-x-3 gap-y-0.5 rounded-xl border border-line px-3 py-2.5 text-sm">
+        <div
+          key={refuel.id}
+          className={cx(
+            'flex flex-wrap justify-between gap-x-3 gap-y-0.5 rounded-xl border border-line px-3 py-2.5 text-sm',
+            added.has(refuel.id) && 'animate-row-in',
+          )}
+        >
           <span>
             {f.date(refuel.recordedAt)} · {personName(refuel.paidBy)}
           </span>
@@ -69,7 +91,7 @@ export function DistanceBars({ people }: { people: PersonShareDto[] }) {
               )}
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-surface-2">
-              <div className="h-full rounded-full bg-accent" style={{ width: `${person.percent}%` }} />
+              <div className="h-full animate-bar-in rounded-full bg-accent transition-[width] duration-500 ease-out" style={{ width: `${person.percent}%` }} />
             </div>
             <span className="text-[13px] text-muted">
               {f.km(person.km)} · {f.percent(person.percent)}
@@ -133,6 +155,7 @@ export function ReadingsList({
 }) {
   const { t, f, fill } = useApp();
   const [page, setPage] = useState(1);
+  const added = useAddedIds(readings.map((reading) => reading.id));
   const pages = Math.max(1, Math.ceil(readings.length / READINGS_PER_PAGE));
   const current = Math.min(page, pages);
   const visible = readings.slice((current - 1) * READINGS_PER_PAGE, current * READINGS_PER_PAGE);
@@ -146,7 +169,13 @@ export function ReadingsList({
           // The recorder is shown only when the reading isn't simply their own trip.
           const recorder = reading.recordedBy && !(names.length === 1 && names[0] === reading.recordedBy) ? reading.recordedBy : null;
           return (
-            <div key={reading.id} className="flex items-center justify-between gap-3 border-b border-line py-2.5 last:border-b-0">
+            <div
+              key={reading.id}
+              className={cx(
+                'flex items-center justify-between gap-3 border-b border-line py-2.5 last:border-b-0',
+                added.has(reading.id) && 'animate-row-flush-in',
+              )}
+            >
               <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="font-semibold">{names.join(', ')}</span>
                 <span className="text-[13px] text-muted">

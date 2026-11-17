@@ -30,20 +30,22 @@ export function CorrectionNote({ corrections, unseen }: { corrections: ActivityE
         <span className="flex-1">{label}</span>
         <ChevronDownIcon size={18} className={cx('transition', open && 'rotate-180')} />
       </button>
-      {open && (
-        <ul className="m-0 flex list-none flex-col gap-3 px-3.5 pb-3.5 pl-11 text-sm">
-          {corrections.map((entry) => (
-            <li key={entry.id} className="flex flex-col gap-0.5">
-              <span className="font-semibold">
-                {f.dateTime(entry.occurredAt)} · {entry.actorName ?? t.activity.system}
-              </span>
-              <span>
-                {t.activity.types[entry.type]}: {describeActivity(entry, app)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className={cx('grid transition-[grid-template-rows] duration-200 ease-out', open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]')} aria-hidden={!open}>
+        <div className="overflow-hidden">
+          <ul className="m-0 flex list-none flex-col gap-3 px-3.5 pb-3.5 pl-11 text-sm">
+            {corrections.map((entry) => (
+              <li key={entry.id} className="flex flex-col gap-0.5">
+                <span className="font-semibold">
+                  {f.dateTime(entry.occurredAt)} · {entry.actorName ?? t.activity.system}
+                </span>
+                <span>
+                  {t.activity.types[entry.type]}: {describeActivity(entry, app)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

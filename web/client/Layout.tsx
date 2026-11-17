@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useApp } from '../common/app.tsx';
 import { Logo, ThemeToggle, UserMenu, type MenuItem } from '../common/components/chrome.tsx';
 import { ClockIcon, GearIcon, HomeIcon, LogoutIcon, OverviewIcon } from '../common/components/icons.tsx';
@@ -17,6 +17,7 @@ function Dot({ label }: { label: string }) {
 export function Layout({ version }: { version: string }) {
   const { me, t, fill, signOut } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
   const unseen = me?.unseenCorrections ?? { active: false, history: false };
 
   const items: MenuItem[] = [{ label: t.common.settings, icon: <GearIcon size={18} />, onSelect: () => navigate('/settings') }];
@@ -65,7 +66,10 @@ export function Layout({ version }: { version: string }) {
       </header>
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pb-10">
-        <Outlet />
+        {/* Remounted per section, so each page's blocks animate in. */}
+        <div key={location.pathname.split('/')[1]} className="flex flex-col gap-4 *:animate-rise-in">
+          <Outlet />
+        </div>
         {version && <footer className="mt-auto pt-2 text-center text-xs text-muted">{fill(t.common.version, { version })}</footer>}
       </main>
 

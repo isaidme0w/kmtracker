@@ -114,7 +114,7 @@ function ActiveDashboard() {
           <Stat label={t.cycle.distance} value={f.km(cycle.totalKm)} />
           <Stat label={t.cycle.refuels} value={f.money(cycle.refuelsTotal)} />
         </div>
-        {cycle.refuels.length > 0 ? <RefuelsList refuels={cycle.refuels} /> : <p className="m-0 text-sm text-muted">{t.cycle.noRefuels}</p>}
+        <RefuelsList refuels={cycle.refuels} emptyText={t.cycle.noRefuels} />
         <DistanceBars people={cycle.people} />
         <p className="m-0 border-t border-line pt-2.5 text-[13px] text-muted">
           {cycle.rate

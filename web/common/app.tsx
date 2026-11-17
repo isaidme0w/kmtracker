@@ -32,6 +32,9 @@ export interface Formatters {
   dateTime: (iso: string) => string;
 }
 
+// How long a notification stays on screen; its animation lasts just as long.
+export const TOAST_DURATION = 3500;
+
 export interface Toast {
   id: number;
   message: string;
@@ -165,7 +168,7 @@ export function AppProvider({ base, children }: { base: '/api' | '/api/admin'; c
   const notify = useCallback((message: string, kind: Toast['kind'] = 'success') => {
     const id = ++toastId.current;
     setToasts((current) => [...current, { id, message, kind }]);
-    setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== id)), 3500);
+    setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== id)), TOAST_DURATION);
   }, []);
 
   const timeZone = me?.timeZone ?? browserTimeZone;

@@ -125,7 +125,7 @@ export function ParticipantsPicker({
   return (
     <div className="flex flex-wrap gap-2">
       {value.map((person) => (
-        <span key={person.id} className="inline-flex h-9 items-center gap-0.5 rounded-full bg-accent-soft pr-0.5 pl-3 text-sm font-semibold">
+        <span key={person.id} className="inline-flex h-9 animate-pop-in items-center gap-0.5 rounded-full bg-accent-soft pr-0.5 pl-3 text-sm font-semibold">
           {personLabel(person)}
           <button
             type="button"
